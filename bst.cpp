@@ -73,11 +73,11 @@ class Bst
             BNode* right;
             BNode* left;
             // copy constructor
-            BNode(const ValType& val, BNode* lt, BNode* rt): 
-                value{val}, left{lt}, right{rt} {}
+            BNode(const ValType& val, BNode* rt, BNode* lt): 
+                value{val}, right{rt}, left{lt} {}
             // move constructor
-            BNode(const ValType&& val, BNode* lt, BNode* rt): 
-                value{std::move(val)}, left{lt}, right{rt} {}
+            BNode(const ValType&& val, BNode* rt, BNode* lt): 
+                value{std::move(val)}, right{rt}, left{lt} {}
         };
 
         BNode* root;
@@ -117,9 +117,9 @@ class Bst
             // if there is none it will be nullptr
             else
             {
-                BNode* current = t;
+                BNode* holder = t;
                 t = (t->left != nullptr) ? t->left : t->right;
-                delete current;
+                delete holder;
             }
         }
 
@@ -173,7 +173,7 @@ class Bst
             t= nullptr;
         }
 
-        void print(BNode* t, std::ofstream& out) const
+        void print(BNode* t, std::ostream& out) const
         {
             if( t != nullptr )
             {

@@ -187,7 +187,7 @@ class Bst
         BNode* clone(BNode* t) const
         {
             if(t == nullptr) return nullptr;
-            else return new BNode(t->value, clone(t->left), clone(t->right));
+            return new BNode(t->value, clone(t->left), clone(t->right));
         }
 };
 

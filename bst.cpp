@@ -12,15 +12,16 @@ class Bst
         Bst(const Bst& other): root{nullptr} { root = clone(other.root); }
         
         // move constructor
-        Bst(const Bst&& other): root{other.root} { other.root=nullptr; }
+        Bst(Bst&& other): root{other.root} { other.root=nullptr; }
 
         // copy assignment
         // TODO: does the original one needs deletion?
         Bst& operator=(const Bst& other)
         {
             if(this == &other) return *this;
-            Bst copy = other;
-            std::swap(*this, copy);
+            //Bst copy = other;
+            std::swap(*this, other);
+            clear(other);
             return *this;
         }
 
@@ -76,8 +77,8 @@ class Bst
             BNode(const ValType& val, BNode* rt, BNode* lt): 
                 value{val}, right{rt}, left{lt} {}
             // move constructor
-            BNode(const ValType&& val, BNode* rt, BNode* lt): 
-                value{std::move(val)}, right{rt}, left{lt} {}
+            BNode(ValType&& val, BNode* rt, BNode* lt): 
+                value{std::move(val)}, right{rt}, left{lt} {val=0, delete rt, delete lt;}
         };
 
         BNode* root;
@@ -186,7 +187,7 @@ class Bst
         BNode* clone(BNode* t) const
         {
             if(t == nullptr) return nullptr;
-            return new BNode(t->value, clone(t->left), clone(t->right));
+            else return new BNode(t->value, clone(t->left), clone(t->right));
         }
 };
 
@@ -196,6 +197,21 @@ int main()
     tree.insert(5);
     tree.insert(6);
     tree.insert(4);
+    tree.insert(30);
+    tree.insert(26);
+    tree.insert(3);
+    tree.findMax();
+    tree.findMin();
+    tree.find(5);
+    tree.find(40);
+    tree.isEmpty();
+    tree.remove(26);
     tree.print();
+    std::cout << "*******" << std::endl;
+    Bst<int> tree2 = tree;
+    tree2.print();
+    std::cout << "*******" << std::endl;
+    Bst<int> tree3 = std::move(tree2);
+    tree3.print();
     
 }

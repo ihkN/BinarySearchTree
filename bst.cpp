@@ -3,6 +3,7 @@
 #include <iterator>
 #include <utility>
 
+
 template <typename ValType>
 struct BstNode
 {
@@ -39,64 +40,69 @@ class Bst
                 
                 // postincrement and preincrement
                 BstIterator& operator++();
+                BstIterator operator++(int);
+                BstIterator& operator--();
                 BstIterator operator--(int);
 
-            private:
-                // current is the current location in the tree.
-                // tree is address of stree object associate with this iterator
-                const BstNode<value_type>* current;
-                const Bst<value_type>* tree;
-                
-                // used to construct an iterator return value from a node pointer
-                BstIterator(const BstNode<value_type>* p, const Bst<value_type>* t);
-        };
-        
-        // we just want const_iterator so that
-        // iterators cant modify the tree
-        using const_iterator = BstIterator;
-        using iterator = const_iterator;
-        using value_type = ValType;
+                private:
+                    // current is the current location in the tree.
+                    // tree is address of stree object associate with this iterator
+                    const BstNode<value_type>* current;
+                    const Bst<value_type>* tree;
+                    
+                    // used to construct an iterator return value from a node pointer
+                    BstIterator(const BstNode<value_type>* p, const Bst<value_type>* t);
 
-        Bst(): root{nullptr} {}
+                    friend class Bst<value_type>;
+            };
+            
 
-        Bst(const Bst& other): root{nullptr} { root = clone(other.root); }
+            // we just want const_iterator so that
+            // iterators cant modify the tree
+            using const_iterator = BstIterator;
+            using iterator = const_iterator;
+            using value_type = ValType;
 
-        Bst(const Bst&& other): root{other.root} { other.root = nullptr; }
+            Bst(): root{nullptr} {}
 
-        ~Bst() { clear(); }
+            Bst(const Bst& other): root{nullptr} { root = clone(other.root); }
 
-        Bst& operator=(const Bst& other)
-        {
-            Bst copy = other;
-            std::swap(*this, copy);
-            return *this;
-        }
+            Bst(const Bst&& other): root{other.root} { other.root = nullptr; }
 
-        Bst& operator=(const Bst&& other)
-        {
-            std::swap(root, other.root);
-            return *this;
-        }
-        
-        // search for x, if found return an iterator
-        // to it, otherwise return end()
-        const_iterator find(const value_type& x) const;
-        
-        // return an iterator pointing to the first item (inorder)
-        const_iterator begin() const;
-        
-        // return an iterator poiting just past the end of tree
-        const_iterator end() const;
+            ~Bst() { clear(); }
 
-        const value_type& findMin() const
-        {
-            if (isEmpty())
-                throw std::underflow_error("Null Tree!");
-            return findMin(root)->value;
-        }
+            Bst& operator=(const Bst& other)
+            {
+                Bst copy = other;
+                std::swap(*this, copy);
+                return *this;
+            }
 
-        const value_type& findMax() const
-        {
+            Bst& operator=(const Bst&& other)
+            {
+                std::swap(root, other.root);
+                return *this;
+            }
+            
+            // search for x, if found return an iterator
+            // to it, otherwise return end()
+            const_iterator find(const value_type& x) const;
+            
+            // return an iterator pointing to the first item (inorder)
+            const_iterator begin() const;
+            
+            // return an iterator poiting just past the end of tree
+            const_iterator end() const;
+
+            const value_type& findMin() const
+            {
+                if (isEmpty())
+                    throw std::underflow_error("Null Tree!");
+                return findMin(root)->value;
+            }
+
+            const value_type& findMax() const
+            {
             if(isEmpty())
                     throw std::underflow_error("Null Tree!");
             return findMax(root)->value;
@@ -214,4 +220,136 @@ class Bst
         }
 };
 
-int main() {}
+template <typename ValType>
+typename Bst<ValType>::const_iterator
+Bst<ValType>::find(const ValType& x) const
+{
+    auto t = root;
+    while(t != nullptr && !(t->value == x))
+        t = (x < t->value) ? t->left : t->right;
+    return BstIterator(t, this);
+}
+
+template <typename ValType>
+typename Bst<ValType>::const_iterator
+Bst<ValType>::begin() const
+{
+    return const_iterator(findMin(root), this);
+}
+
+template <typename ValType>
+typename Bst<ValType>::const_iterator
+Bst<ValType>::end() const
+{
+    return BstIterator(nullptr, this);
+}
+
+template <typename ValType>
+Bst<ValType>::BstIterator::BstIterator(): current(nullptr), tree(nullptr) {}
+
+template <typename ValType>
+bool Bst<ValType>::BstIterator::operator!=(const BstIterator& other) const
+{
+    return tree != other.tree || current != other.current;
+}
+
+template <typename ValType>
+const ValType& Bst<ValType>::BstIterator::operator*() const
+{
+    if(current == nullptr)
+        throw std::underflow_error("Null Tree!");
+    return current->value;
+}
+
+template <typename ValType>
+typename Bst<ValType>::BstIterator&
+Bst<ValType>::BstIterator::operator++()
+{
+    BstNode<ValType>* p;
+    if( current == nullptr)
+    {
+        current = tree->root;
+        if(current = nullptr)
+            throw std::underflow_error("Null Tree!");
+        while(current->left != nullptr)
+            current = current->left;
+    }
+    else
+    {
+        if(current->right != nullptr)
+        {
+            current = current->right;
+            while(current->left != nullptr)
+                current = current->left;
+        }
+        else
+        {
+            p = current->parent;
+            while((p != nullptr) && (current == p->right))
+            {
+                current = p;
+                p = p->parent;
+            }
+            current = p;
+        }
+    }
+
+    return *this;
+}
+
+template <typename ValType>
+typename Bst<ValType>::BstIterator
+Bst<ValType>::BstIterator::operator++(int)
+{
+    auto holder = *this;
+    operator++();
+    return holder;
+}
+
+template <typename ValType>
+typename Bst<ValType>::BstIterator&
+Bst<ValType>::BstIterator::operator--()
+{
+    BstNode<ValType>* p;
+    if(current == nullptr)
+    {
+        current = tree->root;
+        if(current == nullptr)
+            throw std::underflow_error("Null Tree!");
+        while(current->right != nullptr)
+            current = current->right;
+    }
+    else if(current->left != nullptr)
+    {
+        while(current->right != nullptr)
+            current = current->right;
+    }
+    else
+    {
+        p = current->parent;
+        while((p != nullptr) && (current == p->left))
+        {
+            current = p;
+            p = p->parent;
+        }
+        current = p;
+    }
+
+    return *this;
+}
+
+template <typename ValType>
+typename Bst<ValType>::BstIterator
+Bst<ValType>::BstIterator::operator--(int)
+{
+    auto holder = *this;
+    operator--();
+    return holder;
+}
+
+template <typename ValType>
+Bst<ValType>::BstIterator::BstIterator(const BstNode<ValType>* p, const Bst<ValType>* t):
+    current(p), tree(t) {}
+
+
+//int main() {}

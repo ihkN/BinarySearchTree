@@ -269,7 +269,7 @@ Bst<ValType>::BstIterator::operator++()
     if( current == nullptr)
     {
         current = tree->root;
-        if(current = nullptr)
+        if(current == nullptr)
             throw std::underflow_error("Null Tree!");
         while(current->left != nullptr)
             current = current->left;
@@ -352,4 +352,29 @@ Bst<ValType>::BstIterator::BstIterator(const BstNode<ValType>* p, const Bst<ValT
     current(p), tree(t) {}
 
 
-//int main() {}
+int main()
+{
+    Bst<int> tree;
+    tree.insert(45);
+    tree.insert(90);
+    tree.insert(20);
+    tree.insert(15);
+    tree.insert(70);
+    tree.insert(65);
+    tree.print();
+    std::cout << "*********" << std::endl;
+    auto f = tree.find(45);
+    std::cout << *++f << std::endl;
+    std::cout << *tree.begin() << std::endl;
+    std::cout << "*********" << std::endl;
+    tree.remove(70);
+    tree.print();
+    std::cout << "*********" << std::endl;
+    std::cout << tree.findMax() << std::endl;
+    std::cout << tree.findMin() << std::endl;
+    if(tree.contains(65)) std::cout << "contains 65" << std::endl;
+    std::cout << "*********" << std::endl;
+    Bst<int> tree2 = tree;
+    tree2.print();
+
+}

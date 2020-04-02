@@ -384,4 +384,7 @@ int main()
     std::cout << max.first << std::endl;
     auto min = tree.findMin();
     std::cout << min.first << ", " << min.second << std::endl;
+
+    tree.clear();
+    tree.print();
 }

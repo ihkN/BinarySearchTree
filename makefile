@@ -1,12 +1,12 @@
 CC := g++
 CFLAGS := -std=c++17 -g -Wall -Wextra
 
-PRJS := bst 
-SRCS := $(wildcard *.cpp) 
-OBJS := $(SRCS:%.cpp=%.o)
-EXES := $(PRJS:%=%.x)
+PRJ := bst 
+SRC := $(wildcard *.cpp) 
+OBJ := $(SRC:%.cpp=%.o)
+EXE := $(PRJ:%=%.x)
 
-all: $(EXES)
+all: $(EXE)
 
 %.x: %.o
 	$(CC) $(CFLAGS) $^ -o $@
@@ -15,7 +15,10 @@ all: $(EXES)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 run: all
-	./$(EXES)
+	./$(EXE)
+
+mem: all
+	valgrind ./$(EXE) --leak-check=full -s
 
 clean:
 	rm -f *.o *.x 

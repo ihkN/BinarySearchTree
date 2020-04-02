@@ -57,12 +57,32 @@ class Bst
 
                     friend class Bst<Key, Val>;
             };
+
+            class BstConstIterator: public BstIterator
+            {
+                public:
+                    using Pair = std::pair<Key, Val>;
+                    
+                    using BstIterator::BstIterator;
+
+                    using BstIterator::operator==;
+                    using BstIterator::operator!=;
+                    using BstIterator::operator++;
+                    using BstIterator::operator--;
+
+                    const Pair& operator*() const { return BstIterator::operator*(); }
+
+                private:
+                    friend class BstIterator;
+        
+            };
+
             
 
             // we just want const_iterator so that
             // iterators cant modify the tree
-            using const_iterator = BstIterator;
-            using iterator = const_iterator;
+            using iterator = BstIterator;
+            using const_iterator = BstConstIterator;
             using Pair = std::pair<Key, Val>;
 
             Bst(): root{nullptr} {}
@@ -88,13 +108,21 @@ class Bst
             
             // search for x, if found return an iterator
             // to it, otherwise return end()
+            iterator find(const Pair& x);
             const_iterator find(const Pair& x) const;
             
             // return an iterator pointing to the first item (inorder)
+            // begin will return iterator or const_iterator depending 
+            // on the const-qulification of the object it is called upon,
+            // cbegin will return const iterator unconditionally
+            iterator begin();
             const_iterator begin() const;
+            const_iterator cbegin() const;
             
             // return an iterator poiting just past the end of tree
+            iterator end();
             const_iterator end() const;
+            const_iterator cend() const;
 
             const Pair& findMin() const
             {
@@ -128,11 +156,11 @@ class Bst
 
         void clear() { clear(root); }
 
-        const_iterator insert(const Pair& x)
+        iterator insert(const Pair& x)
         {
             auto t = insert(x, root, nullptr);
             if(t == nullptr) return end();
-            else return const_iterator(t, this);
+            else return iterator(t, this);
         }
 
         void remove(const Pair& x) { remove(x, root); }
@@ -223,6 +251,22 @@ class Bst
         }
 };
 
+/*
+ *template <typename Key, typename Val, typename Cmp>
+ *typename Bst<Key, Val, Cmp>::const_iterator
+ *Bst<Key, Val, Cmp>
+ */
+
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::iterator
+Bst<Key, Val, Cmp>::find(const std::pair<Key, Val>& x)
+{
+    auto t = root;
+    while(t != nullptr && !(t->data == x))
+        t = (compare(x, t->data)) ? t->left : t->right;
+    return BstIterator(t, this);
+}
+
 template <typename Key, typename Val, typename Cmp>
 typename Bst<Key, Val, Cmp>::const_iterator
 Bst<Key, Val, Cmp>::find(const std::pair<Key, Val>& x) const
@@ -230,7 +274,14 @@ Bst<Key, Val, Cmp>::find(const std::pair<Key, Val>& x) const
     auto t = root;
     while(t != nullptr && !(t->data == x))
         t = (compare(x, t->data)) ? t->left : t->right;
-    return BstIterator(t, this);
+    return BstConstIterator(t, this);
+}
+
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::iterator
+Bst<Key, Val, Cmp>::begin()
+{
+    return iterator(findMin(root), this);
 }
 
 template <typename Key, typename Val, typename Cmp>
@@ -242,9 +293,30 @@ Bst<Key, Val, Cmp>::begin() const
 
 template <typename Key, typename Val, typename Cmp>
 typename Bst<Key, Val, Cmp>::const_iterator
+Bst<Key, Val, Cmp>::cbegin() const
+{
+    return const_iterator(findMin(root), this);
+}
+
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::iterator
+Bst<Key, Val, Cmp>::end()
+{
+    return BstIterator(nullptr, this);
+}
+
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::const_iterator
 Bst<Key, Val, Cmp>::end() const
 {
     return BstIterator(nullptr, this);
+}
+
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::const_iterator
+Bst<Key, Val, Cmp>::cend() const
+{
+    return BstConstIterator(nullptr, this);
 }
 
 template <typename Key, typename Val, typename Cmp>
@@ -384,6 +456,11 @@ int main()
     std::cout << max.first << std::endl;
     auto min = tree.findMin();
     std::cout << min.first << ", " << min.second << std::endl;
+    
+    auto b = tree.begin();
+    auto cb = tree.cbegin();
+    std::cout << "begin: " << (*++b).first << std::endl;
+    std::cout << "cbegin: " << (*++cb).first << std::endl;
 
     tree.clear();
     tree.print();

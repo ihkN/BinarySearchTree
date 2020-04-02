@@ -21,7 +21,7 @@ struct BstNode
         data(std::move(dat)), right(rn), left(ln), parent(par) {}
 };
 
-template <typename Key, typename Val>
+template <typename Key, typename Val, typename Cmp=std::less<std::pair<Key, Val>>>
 class Bst
 {
     public:
@@ -40,7 +40,7 @@ class Bst
                 // value pointed by current node
                 const Pair& operator*() const;
                 
-                // postincrement and preincrement
+                // post and pre increment and decrement
                 BstIterator& operator++();
                 BstIterator operator++(int);
                 BstIterator& operator--();
@@ -139,6 +139,7 @@ class Bst
 
     private:
         BstNode<Key, Val>* root;
+        Cmp compare;
 
         BstNode<Key, Val>* insert(const Pair& x, BstNode<Key, Val>*& t, BstNode<Key, Val>* par)
         {
@@ -147,16 +148,16 @@ class Bst
                 t = new BstNode<Key, Val>{x, nullptr, nullptr, par};
                 return t;
             }
-            else if(x.first < t->data.first) return insert(x, t->left, t);
-            else if(x.first > t->data.first) return insert(x, t->right, t);
+            else if(compare(x, t->data)) return insert(x, t->left, t);
+            else if(compare(t->data, x)) return insert(x, t->right, t);
             else return nullptr;
         }
 
         bool remove(const Pair& x, BstNode<Key, Val>*& t)
         {
             if(t == nullptr) return false;
-            if(x < t->data.first) return remove(x, t->left);
-            else if(x > t->data.first) return remove(x, t->right);
+            if(compare(x, t->data)) return remove(x, t->left);
+            else if(compare(t->data, x)) return remove(x, t->right);
             else if((t->left != nullptr) && (t->right != nullptr))
             {
                 t->data = findMin(t->right)->data;
@@ -189,8 +190,8 @@ class Bst
         bool contains(const Pair& x, BstNode<Key, Val>* t) const
         {
             if(t == nullptr) return false;
-            else if(x < t->data.first) return contains(x, t->left);
-            else if(x > t->data.first) return contains(x, t->right);
+            else if(compare(x, t->data)) return contains(x, t->left);
+            else if(compare(t->data, x)) return contains(x, t->right);
             else return true;
         }
 
@@ -222,50 +223,50 @@ class Bst
         }
 };
 
-template <typename Key, typename Val>
-typename Bst<Key, Val>::const_iterator
-Bst<Key, Val>::find(const std::pair<Key, Val>& x) const
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::const_iterator
+Bst<Key, Val, Cmp>::find(const std::pair<Key, Val>& x) const
 {
     auto t = root;
-    while(t != nullptr && !(t->value == x))
-        t = (x < t->data.first) ? t->left : t->right;
+    while(t != nullptr && !(t->data == x))
+        t = (compare(x, t->data)) ? t->left : t->right;
     return BstIterator(t, this);
 }
 
-template <typename Key, typename Val>
-typename Bst<Key, Val>::const_iterator
-Bst<Key, Val>::begin() const
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::const_iterator
+Bst<Key, Val, Cmp>::begin() const
 {
     return const_iterator(findMin(root), this);
 }
 
-template <typename Key, typename Val>
-typename Bst<Key, Val>::const_iterator
-Bst<Key, Val>::end() const
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::const_iterator
+Bst<Key, Val, Cmp>::end() const
 {
     return BstIterator(nullptr, this);
 }
 
-template <typename Key, typename Val>
-Bst<Key, Val>::BstIterator::BstIterator(): current(nullptr), tree(nullptr) {}
+template <typename Key, typename Val, typename Cmp>
+Bst<Key, Val, Cmp>::BstIterator::BstIterator(): current(nullptr), tree(nullptr) {}
 
-template <typename Key, typename Val>
-bool Bst<Key, Val>::BstIterator::operator!=(const BstIterator& other) const
+template <typename Key, typename Val, typename Cmp>
+bool Bst<Key, Val, Cmp>::BstIterator::operator!=(const BstIterator& other) const
 {
     return tree != other.tree || current != other.current;
 }
 
-template <typename Key, typename Val>
-const std::pair<Key, Val>& Bst<Key, Val>::BstIterator::operator*() const
+template <typename Key, typename Val, typename Cmp>
+const std::pair<Key, Val>& Bst<Key, Val, Cmp>::BstIterator::operator*() const
 {
     if(current == nullptr)
         throw std::underflow_error("Null Tree!");
     return current->data;
 }
 
-template <typename Key, typename Val>
-typename Bst<Key, Val>::BstIterator&
-Bst<Key, Val>::BstIterator::operator++()
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::BstIterator&
+Bst<Key, Val, Cmp>::BstIterator::operator++()
 {
     BstNode<Key, Val>* p;
     if( current == nullptr)
@@ -299,18 +300,18 @@ Bst<Key, Val>::BstIterator::operator++()
     return *this;
 }
 
-template <typename Key, typename Val>
-typename Bst<Key, Val>::BstIterator
-Bst<Key, Val>::BstIterator::operator++(int)
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::BstIterator
+Bst<Key, Val, Cmp>::BstIterator::operator++(int)
 {
     auto holder = *this;
     operator++();
     return holder;
 }
 
-template <typename Key, typename Val>
-typename Bst<Key, Val>::BstIterator&
-Bst<Key, Val>::BstIterator::operator--()
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::BstIterator&
+Bst<Key, Val, Cmp>::BstIterator::operator--()
 {
     BstNode<Key, Val>* p;
     if(current == nullptr)
@@ -340,27 +341,47 @@ Bst<Key, Val>::BstIterator::operator--()
     return *this;
 }
 
-template <typename Key, typename Val>
-typename Bst<Key, Val>::BstIterator
-Bst<Key, Val>::BstIterator::operator--(int)
+template <typename Key, typename Val, typename Cmp>
+typename Bst<Key, Val, Cmp>::BstIterator
+Bst<Key, Val, Cmp>::BstIterator::operator--(int)
 {
     auto holder = *this;
     operator--();
     return holder;
 }
 
-template <typename Key, typename Val>
-Bst<Key, Val>::BstIterator::BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val>* t):
+template <typename Key, typename Val, typename Cmp>
+Bst<Key, Val, Cmp>::BstIterator::BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val>* t):
     current(p), tree(t) {}
 
 int main()
 {
     Bst<int, std::string> tree;
+    tree.print();
+   
+    std::pair p1 = std::make_pair(12, "SR");
+    std::pair p2 = std::make_pair(4, "QP");
     tree.insert(std::make_pair(1, "AB"));
     tree.insert(std::make_pair(3, "GR"));
     tree.insert(std::make_pair(2, "DM"));
     tree.insert(std::make_pair(6, "RE"));
+    tree.insert(p1);
+    tree.insert(p2);
     tree.print();
-    //std::cout << "********" << std::endl;
-    //tree.remove(std::pair<int, std::string>(3, "GR"));
+   
+    auto f = tree.find(p2);
+    std::cout << "f   = " << (*f).first << std::endl;
+    f++;
+    std::cout << "f++ = " << (*f).first << std::endl;
+    ++f;
+    std::cout << "++f = " << (*f).first << std::endl;
+    f--;
+    std::cout << "f-- = " << (*f).first << std::endl;
+    --f;
+    std::cout << "--f = " << (*f).first << std::endl;
+   
+    auto max = tree.findMax();
+    std::cout << max.first << std::endl;
+    auto min = tree.findMin();
+    std::cout << min.first << ", " << min.second << std::endl;
 }

@@ -1,6 +1,6 @@
 CC := g++
-CFLAGS := -std=c++17 -g -Wall -Wextra
-INC := -I.
+CFLAGS := -std=c++17 -g -Wall -Wextra -O3
+INC := .
 
 PRJ := test 
 SRC := $(wildcard *.cpp) 

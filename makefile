@@ -1,7 +1,8 @@
 CC := g++
 CFLAGS := -std=c++17 -g -Wall -Wextra
+INC := -I.
 
-PRJ := bst 
+PRJ := test 
 SRC := $(wildcard *.cpp) 
 OBJ := $(SRC:%.cpp=%.o)
 EXE := $(PRJ:%=%.x)
@@ -9,7 +10,7 @@ EXE := $(PRJ:%=%.x)
 all: $(EXE)
 
 %.x: %.o
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ -I$(INC)
 
 %.o : %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -23,6 +24,4 @@ mem: all
 clean:
 	rm -f *.o *.x 
 
-.PHONY: all run clean
-
-bst.x: bst.o
+.PHONY: all run clean mem

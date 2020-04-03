@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iterator>
 #include <utility>
+#include <memory>
 
 template <typename Key, typename Val>
 struct BstNode
@@ -12,9 +13,10 @@ struct BstNode
     using Pair = std::pair<Key, Val>;
     
     Pair data;
-    BstNode* right;
-    BstNode* left;
-    BstNode* parent;
+    //BstNode* right;
+    //BstNode* left;
+    std::unique_ptr<BstNode> right, left, parent;    
+    //BstNode* parent;
 
     explicit BstNode(const Pair& dat, BstNode* rn, BstNode* ln, BstNode* par): 
         data(dat), right(rn), left(ln), parent(par) {}
@@ -92,14 +94,17 @@ class Bst
 
             Bst& operator=(const Bst& other)
             {
+                clear();
                 Bst copy = other;
-                std::swap(*this, copy);
+                //std::swap(*this, copy);
+                (*this) = std::move(copy);
                 return *this;
             }
 
             Bst& operator=(const Bst&& other) noexcept
             {
-                std::swap(root, other.root);
+                root = std::move(other.root);
+                //std::swap(root, other.root)
                 return *this;
             }
             
@@ -155,14 +160,14 @@ class Bst
         void remove(const Pair& x) { remove(x, root); }
 
     private:
-        Node* root;
+        std::unique_ptr<Node> root;
         Cmp compare;
 
         Node* insert(const Pair& x, Node*& t, Node* par)
         {
             if(t == nullptr)
             {
-                t = new Node{x, nullptr, nullptr, par};
+                t.reset(std::make_unique<Node>(x, nullptr, nullptr, par));
                 return t;
             }
             else if(compare(x, t->data)) return insert(x, t->left, t);
@@ -183,10 +188,14 @@ class Bst
             }
             else
             {
-                Node* holder = t;
-                t = (t->left != nullptr) ? t->left : t->right;
-                delete holder;
-                return true;
+                /*
+                 *Node* holder = t;
+                 *t = (t->left != nullptr) ? t->left : t->right;
+                 *delete holder;
+                 *return true;
+                 */
+                if(t->left != nullptr) t = std::move(t->left);
+                else t = std::move(t->right);
             }
         }
 
@@ -214,19 +223,22 @@ class Bst
 
         void clear(Node*& t)
         {
-            if(t != nullptr)
-            {
-                clear(t->left);
-                clear(t->right);
-                delete t;
-            }
-            t = nullptr;
+            /*
+             *if(t != nullptr)
+             *{
+             *    clear(t->left);
+             *    clear(t->right);
+             *    delete t;
+             *}
+             *t = nullptr;
+             */
+            t.reset(nullptr);
         }
 
         Node* clone(Node* t) const
         {
             if(t == nullptr) return nullptr;
-            else return new Node{t->data, clone(t->right), clone(t->left), t->parent};
+            else return std::make_unique<Node>(t->data, clone(t->right), clone(t->left), t->parent);
         }
         
         friend std::ostream& operator<<(std::ostream& os, const Bst& tr)
@@ -243,9 +255,9 @@ template <typename Key, typename Val, typename Cmp>
 typename Bst<Key, Val, Cmp>::iterator
 Bst<Key, Val, Cmp>::find(const std::pair<Key, Val>& x)
 {
-    auto t = root;
+    auto t = std::move(root);
     while(t != nullptr && !(t->data == x))
-        t = (compare(x, t->data)) ? t->left : t->right;
+        t = std::move((compare(x, t->data)) ? t->left : t->right);
     return BstIterator(t, this);
 }
 
@@ -325,19 +337,19 @@ Bst<Key, Val, Cmp>::BstIterator::operator++()
     BstNode<Key, Val>* p;
     if( current == nullptr)
     {
-        current = tree->root;
+        current = std:move(tree->root);
         if(current == nullptr)
             throw std::underflow_error("Null Tree!");
         while(current->left != nullptr)
-            current = current->left;
+            current = std::move(current->left);
     }
     else
     {
         if(current->right != nullptr)
         {
-            current = current->right;
+            current = std::move(current->right);
             while(current->left != nullptr)
-                current = current->left;
+                current = std::move(current->left);
         }
         else
         {
@@ -370,16 +382,16 @@ Bst<Key, Val, Cmp>::BstIterator::operator--()
     BstNode<Key, Val>* p;
     if(current == nullptr)
     {
-        current = tree->root;
+        current = std::move(tree->root);
         if(current == nullptr)
             throw std::underflow_error("Null Tree!");
         while(current->right != nullptr)
-            current = current->right;
+            current = std::move(current->right);
     }
     else if(current->left != nullptr)
     {
         while(current->right != nullptr)
-            current = current->right;
+            current = std::move(current->right);
     }
     else
     {

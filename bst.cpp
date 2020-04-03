@@ -50,12 +50,12 @@ class Bst
                     // current is the current location in the tree.
                     // tree is address of stree object associate with this iterator
                     const BstNode<Key, Val>* current;
-                    const Bst<Key, Val>* tree;
+                    const Bst<Key, Val, Cmp>* tree;
                     
                     // used to construct an iterator return value from a node pointer
-                    BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val>* t);
+                    BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val, Cmp>* t);
 
-                    friend class Bst<Key, Val>;
+                    friend class Bst;
             };
 
             class BstConstIterator: public BstIterator
@@ -73,7 +73,7 @@ class Bst
                     const Pair& operator*() const { return BstIterator::operator*(); }
 
                 private:
-                    friend class BstIterator;
+                    friend class Bst;
         
             };
 
@@ -145,14 +145,6 @@ class Bst
         }
 
         bool isEmpty() const { return root == nullptr; }
-
-        void print(std::ostream& out = std::cout) const
-        {
-            if(isEmpty())
-                out << "Null Tree!" << std::endl;
-            else
-                print(root, out);
-        }
 
         void clear() { clear(root); }
 
@@ -234,28 +226,22 @@ class Bst
             t = nullptr;
         }
 
-        void print(BstNode<Key, Val>* t, std::ostream& out) const
-        {
-            if( t != nullptr )
-            {
-                print(t->left, out);
-                out << t->data.first << ", " << t->data.second <<std:: endl;
-                print(t->right, out);
-            }
-        }
-
         BstNode<Key, Val>* clone(BstNode<Key, Val>* t) const
         {
             if(t == nullptr) return nullptr;
             else return new BstNode<Key, Val>{t->data, clone(t->right), clone(t->left), t->parent};
         }
+        
+        friend std::ostream& operator<<(std::ostream& os, const Bst& tr)
+        {
+            if(tr.isEmpty())
+                std::cout << "Null Tree!" << std::endl;
+            else for(auto& p: tr)
+                os << "(" << p.first << "," << p.second << ")" << std::endl;
+           return os; 
+        };
 };
 
-/*
- *template <typename Key, typename Val, typename Cmp>
- *typename Bst<Key, Val, Cmp>::const_iterator
- *Bst<Key, Val, Cmp>
- */
 
 template <typename Key, typename Val, typename Cmp>
 typename Bst<Key, Val, Cmp>::iterator
@@ -309,7 +295,7 @@ template <typename Key, typename Val, typename Cmp>
 typename Bst<Key, Val, Cmp>::const_iterator
 Bst<Key, Val, Cmp>::end() const
 {
-    return BstIterator(nullptr, this);
+    return BstConstIterator(nullptr, this);
 }
 
 template <typename Key, typename Val, typename Cmp>
@@ -422,15 +408,25 @@ Bst<Key, Val, Cmp>::BstIterator::operator--(int)
     return holder;
 }
 
+/*
+ *template <typename Key, typename Val, typename Cmp>
+ *std::ostream& operator<<(std::ostream& os, const Bst<Key, Val, Cmp>& tr)
+ *{
+ *    for(auto& p: tr)
+ *        os << "(" << p.first << "," << p.second << ")" << std::endl;
+ *   return os; 
+ *}
+ */
+
 template <typename Key, typename Val, typename Cmp>
-Bst<Key, Val, Cmp>::BstIterator::BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val>* t):
+Bst<Key, Val, Cmp>::BstIterator::BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val, Cmp>* t):
     current(p), tree(t) {}
 
 int main()
 {
     Bst<int, std::string> tree;
-    tree.print();
-   
+    std::cout << tree;
+
     std::pair p1 = std::make_pair(12, "SR");
     std::pair p2 = std::make_pair(4, "QP");
     tree.insert(std::make_pair(1, "AB"));
@@ -439,7 +435,7 @@ int main()
     tree.insert(std::make_pair(6, "RE"));
     tree.insert(p1);
     tree.insert(p2);
-    tree.print();
+    std::cout << tree;
    
     auto f = tree.find(p2);
     std::cout << "f   = " << (*f).first << std::endl;
@@ -462,6 +458,9 @@ int main()
     std::cout << "begin: " << (*++b).first << std::endl;
     std::cout << "cbegin: " << (*++cb).first << std::endl;
 
+    std::cout << "******" << std::endl;
+    std::cout << tree << std::endl;
+
     tree.clear();
-    tree.print();
+    std::cout << tree << std::endl;
 }

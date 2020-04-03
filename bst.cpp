@@ -14,10 +14,10 @@ struct BstNode
     BstNode* left;
     BstNode* parent;
 
-    BstNode(const Pair& dat, BstNode* rn, BstNode* ln, BstNode* par): 
+    explicit BstNode(const Pair& dat, BstNode* rn, BstNode* ln, BstNode* par): 
         data(dat), right(rn), left(ln), parent(par) {}
 
-    BstNode(Pair&& dat, BstNode* rn, BstNode* ln, BstNode* par):
+    explicit BstNode(Pair&& dat, BstNode* rn, BstNode* ln, BstNode* par):
         data(std::move(dat)), right(rn), left(ln), parent(par) {}
 };
 
@@ -42,8 +42,8 @@ class Bst
                 
                 // post and pre increment and decrement
                 BstIterator& operator++();
-                BstIterator operator++(int);
                 BstIterator& operator--();
+                BstIterator operator++(int);
                 BstIterator operator--(int);
 
                 private:
@@ -62,19 +62,12 @@ class Bst
             {
                 public:
                     using Pair = std::pair<Key, Val>;
-                    
                     using BstIterator::BstIterator;
-
-                    using BstIterator::operator==;
-                    using BstIterator::operator!=;
-                    using BstIterator::operator++;
-                    using BstIterator::operator--;
 
                     const Pair& operator*() const { return BstIterator::operator*(); }
 
                 private:
                     friend class Bst;
-        
             };
 
             
@@ -87,9 +80,9 @@ class Bst
 
             Bst(): root{nullptr} {}
 
-            Bst(const Bst& other): root{nullptr} { root = clone(other.root); }
+            explicit Bst(const Bst& other): root{nullptr} { root = clone(other.root); }
 
-            Bst(const Bst&& other): root{other.root} { other.root = nullptr; }
+            explicit Bst(const Bst&& other) noexcept: root{other.root} { other.root = nullptr; }
 
             ~Bst() { clear(); }
 
@@ -100,7 +93,7 @@ class Bst
                 return *this;
             }
 
-            Bst& operator=(const Bst&& other)
+            Bst& operator=(const Bst&& other) noexcept
             {
                 std::swap(root, other.root);
                 return *this;
@@ -408,16 +401,6 @@ Bst<Key, Val, Cmp>::BstIterator::operator--(int)
     return holder;
 }
 
-/*
- *template <typename Key, typename Val, typename Cmp>
- *std::ostream& operator<<(std::ostream& os, const Bst<Key, Val, Cmp>& tr)
- *{
- *    for(auto& p: tr)
- *        os << "(" << p.first << "," << p.second << ")" << std::endl;
- *   return os; 
- *}
- */
-
 template <typename Key, typename Val, typename Cmp>
 Bst<Key, Val, Cmp>::BstIterator::BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val, Cmp>* t):
     current(p), tree(t) {}
@@ -429,6 +412,7 @@ int main()
 
     std::pair p1 = std::make_pair(12, "SR");
     std::pair p2 = std::make_pair(4, "QP");
+    std::pair p3 = std::make_pair(8, "NE");
     tree.insert(std::make_pair(1, "AB"));
     tree.insert(std::make_pair(3, "GR"));
     tree.insert(std::make_pair(2, "DM"));

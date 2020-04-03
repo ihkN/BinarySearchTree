@@ -75,8 +75,6 @@ class Bst
 
             
 
-            // we just want const_iterator so that
-            // iterators cant modify the tree
             using Pair = std::pair<Key, Val>;
             using Node = BstNode<Key, Val>;
             using iterator = BstIterator;

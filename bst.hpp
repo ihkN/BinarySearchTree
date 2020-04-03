@@ -31,6 +31,7 @@ class Bst
         {
             public:
                 using Pair = std::pair<Key, Val>;
+                using Node = BstNode<Key, Val>;
 
                 BstIterator();
                 
@@ -51,11 +52,11 @@ class Bst
                 private:
                     // current is the current location in the tree.
                     // tree is address of stree object associate with this iterator
-                    const BstNode<Key, Val>* current;
+                    const Node* current;
                     const Bst<Key, Val, Cmp>* tree;
                     
                     // used to construct an iterator return value from a node pointer
-                    BstIterator(const BstNode<Key, Val>* p, const Bst<Key, Val, Cmp>* t);
+                    BstIterator(const Node* p, const Bst<Key, Val, Cmp>* t);
 
                     friend class Bst;
             };
@@ -76,9 +77,10 @@ class Bst
 
             // we just want const_iterator so that
             // iterators cant modify the tree
+            using Pair = std::pair<Key, Val>;
+            using Node = BstNode<Key, Val>;
             using iterator = BstIterator;
             using const_iterator = BstConstIterator;
-            using Pair = std::pair<Key, Val>;
 
             Bst(): root{nullptr} {}
 
@@ -153,14 +155,14 @@ class Bst
         void remove(const Pair& x) { remove(x, root); }
 
     private:
-        BstNode<Key, Val>* root;
+        Node* root;
         Cmp compare;
 
-        BstNode<Key, Val>* insert(const Pair& x, BstNode<Key, Val>*& t, BstNode<Key, Val>* par)
+        Node* insert(const Pair& x, Node*& t, Node* par)
         {
             if(t == nullptr)
             {
-                t = new BstNode<Key, Val>{x, nullptr, nullptr, par};
+                t = new Node{x, nullptr, nullptr, par};
                 return t;
             }
             else if(compare(x, t->data)) return insert(x, t->left, t);
@@ -168,7 +170,7 @@ class Bst
             else return nullptr;
         }
 
-        bool remove(const Pair& x, BstNode<Key, Val>*& t)
+        bool remove(const Pair& x, Node*& t)
         {
             if(t == nullptr) return false;
             if(compare(x, t->data)) return remove(x, t->left);
@@ -181,28 +183,28 @@ class Bst
             }
             else
             {
-                BstNode<Key, Val>* holder = t;
+                Node* holder = t;
                 t = (t->left != nullptr) ? t->left : t->right;
                 delete holder;
                 return true;
             }
         }
 
-        BstNode<Key, Val>* findMin(BstNode<Key, Val>* t) const
+        Node* findMin(Node* t) const
         {
             if(t == nullptr) return nullptr;
             if(t->left == nullptr) return t;
             return findMin(t->left);
         }
 
-        BstNode<Key, Val>* findMax(BstNode<Key, Val>* t) const
+        Node* findMax(Node* t) const
         {
             if(t == nullptr) return nullptr;
             if(t->right == nullptr) return t;
             return findMax(t->right);
         }
 
-        bool contains(const Pair& x, BstNode<Key, Val>* t) const
+        bool contains(const Pair& x, Node* t) const
         {
             if(t == nullptr) return false;
             else if(compare(x, t->data)) return contains(x, t->left);
@@ -210,7 +212,7 @@ class Bst
             else return true;
         }
 
-        void clear(BstNode<Key, Val>*& t)
+        void clear(Node*& t)
         {
             if(t != nullptr)
             {
@@ -221,10 +223,10 @@ class Bst
             t = nullptr;
         }
 
-        BstNode<Key, Val>* clone(BstNode<Key, Val>* t) const
+        Node* clone(Node* t) const
         {
             if(t == nullptr) return nullptr;
-            else return new BstNode<Key, Val>{t->data, clone(t->right), clone(t->left), t->parent};
+            else return new Node{t->data, clone(t->right), clone(t->left), t->parent};
         }
         
         friend std::ostream& operator<<(std::ostream& os, const Bst& tr)

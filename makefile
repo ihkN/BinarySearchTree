@@ -19,7 +19,7 @@ run: all
 	./$(EXE)
 
 mem: all
-	valgrind ./$(EXE) --leak-check=full -s
+	valgrind --leak-check=full -s ./$(EXE) 
 
 clean:
 	rm -f *.o *.x 

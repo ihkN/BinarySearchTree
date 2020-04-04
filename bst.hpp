@@ -263,7 +263,8 @@ Bst<Key, Val, Cmp>::find(const std::pair<Key, Val>& x)
     auto t = root;
     while(t != nullptr && !(t->data == x))
         t = (compare(x, t->data)) ? t->left : t->right;
-    return BstIterator(t, this);
+    //return BstIterator(t, this);
+    return iterator(t, this);
 }
 
 template <typename Key, typename Val, typename Cmp>
@@ -273,7 +274,7 @@ Bst<Key, Val, Cmp>::find(const std::pair<Key, Val>& x) const
     auto t = root;
     while(t != nullptr && !(t->data == x))
         t = (compare(x, t->data)) ? t->left : t->right;
-    return BstConstIterator(t, this);
+    return const_iterator(t, this);
 }
 
 template <typename Key, typename Val, typename Cmp>

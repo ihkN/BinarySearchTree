@@ -9,11 +9,11 @@
 
 #include "bst.hpp"
 
-void printLine(int num=30)
+template<typename T, typename U>
+std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& p)
 {
-    for(int i=0; i<num; ++i)
-        std::cout << "*";
-    std::cout << "\n";
+    os << "(" << p.first << ", " << p.second << ")";
+    return os;
 }
 
 std::vector<std::pair<int, double>> getRandPairs(long int num=100)
@@ -39,6 +39,13 @@ std::vector<std::pair<int, double>> getRandPairs(long int num=100)
     }    
 
     return vec;
+}
+
+void printLine(int num=30)
+{
+    for(int i=0; i<num; ++i)
+        std::cout << "*";
+    std::cout << "\n";
 }
 
 int main()
@@ -87,19 +94,42 @@ int main()
  */
 
     Bst<int, double> tree;
+    auto vec = getRandPairs(5);
 
-    auto vec = getRandPairs(1000000);
     printLine();
     auto t1 = std::chrono::high_resolution_clock::now();
     for(auto p: vec) tree.insert(p);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto et = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
-    std::cout << "time to insert " << vec.size() << " pairs: " << et << "ms" << std::endl;
-    printLine();
+    std::cout << "*time to insert " << vec.size() << " pairs: " << et << "ms" << std::endl;
     
-    tree.insert()
-    auto p = std::make_pair(1, 1.0);
-    auto itr = tree.insert(p);
+    printLine();
+    std::cout << "*test insertion by lvalue and rvalue:" << std::endl;
+    tree.insert(std::make_pair(1, 1.0));
+    auto p1 = std::make_pair(2, 2.0);
+    auto it1 = tree.insert(std::move(p1));
+    std::cout << "inserted pair: " << (*it1) << std::endl;
+
+    printLine();
+    std::cout << "*test post/pre increment/decrement operators:" << std::endl;
+    std::cout << "      note: <it> is iterator pointing to inserted pair." << std::endl;
+    --it1;
+    std::cout << "--it: " << (*it1) << std::endl;
+    ++it1;
+    std::cout << "++it: " << (*it1) << std::endl;
+    it1++;
+    std::cout << "it++: " << (*it1) << std::endl;
+    it1--;
+    std::cout << "it--: " << (*it1) << std::endl;
+
+    printLine();
+    std::cout << "*test find methods: " << std::endl;
+    auto p2 = vec.back();
+    auto it2 = tree.find(p2);
+    std::cout << (*it2) << std::endl;
+
+    Bst<int, double>::iterator it3 = tree.find(p2);
+    std::cout << (*it3) << std::endl;
 
 
 }

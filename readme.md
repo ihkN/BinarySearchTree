@@ -5,7 +5,7 @@ Binary Search Tree Implementation in C++17
 `make`
 
 - to compile and run tests:
-`make test`
+`make run`
 
 - to check for memory leaks using valgrind:
 `make mem`

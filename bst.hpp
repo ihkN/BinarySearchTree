@@ -150,6 +150,13 @@ class Bst
             else return iterator(t, this);
         }
 
+        iterator insert(Pair&& x)
+        {
+            auto t = insert(x, root, nullptr);
+            if(t == nullptr) return end();
+            else return iterator(t, this);
+        }
+
         void remove(const Pair& x) { remove(x, root); }
 
     private:
@@ -157,6 +164,18 @@ class Bst
         Cmp compare;
 
         Node* insert(const Pair& x, Node*& t, Node* par)
+        {
+            if(t == nullptr)
+            {
+                t = new Node{x, nullptr, nullptr, par};
+                return t;
+            }
+            else if(compare(x, t->data)) return insert(x, t->left, t);
+            else if(compare(t->data, x)) return insert(x, t->right, t);
+            else return nullptr;
+        }
+
+        Node* insert(Pair&& x, Node*& t, Node* par)
         {
             if(t == nullptr)
             {

@@ -10,10 +10,10 @@ EXE := $(PRJ:%=%.x)
 all: $(EXE)
 
 %.x: %.o
-	$(CC) $(CFLAGS) $^ -o $@ -I$(INC)
+	$(CC) $(CFLAGS) $^ -o $@
 
 %.o : %.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(INC)
 
 run: all
 	./$(EXE)

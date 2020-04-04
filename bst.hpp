@@ -152,7 +152,7 @@ class Bst
 
         iterator insert(Pair&& x)
         {
-            auto t = insert(x, root, nullptr);
+            auto t = insert(std::move(x), root, nullptr);
             if(t == nullptr) return end();
             else return iterator(t, this);
         }

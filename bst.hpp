@@ -84,7 +84,7 @@ class Bst
 
             explicit Bst(const Bst& other): root{nullptr} { root = clone(other.root); }
 
-            explicit Bst(const Bst&& other) noexcept: root{other.root} { other.root = nullptr; }
+            explicit Bst(Bst&& other) noexcept: root{other.root} { other.root = nullptr; }
 
             ~Bst() { clear(); }
 
@@ -95,7 +95,7 @@ class Bst
                 return *this;
             }
 
-            Bst& operator=(const Bst&& other) noexcept
+            Bst& operator=(Bst&& other) noexcept
             {
                 std::swap(root, other.root);
                 return *this;

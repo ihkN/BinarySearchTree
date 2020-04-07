@@ -200,12 +200,6 @@ class Bst
             }
             else
             {
-                /*
-                 *Node* holder = t;
-                 *t = (t->left != nullptr) ? t->left : t->right;
-                 *delete holder;
-                 *return true;
-                 */
                 if(t->left != nullptr) t = std::move(t->left);
                 else t = std::move(t->right);
                 return true;
@@ -234,19 +228,7 @@ class Bst
             else return true;
         }
 
-        void clear(Uptr& t)
-        {
-            /*
-             *if(t != nullptr)
-             *{
-             *    clear(t->left);
-             *    clear(t->right);
-             *    delete t;
-             *}
-             *t = nullptr;
-             */
-            t.reset();
-        }
+        void clear(Uptr& t) { t.reset(); }
 
         Node* clone(Node* t) const
         {
@@ -350,19 +332,19 @@ Bst<Key, Val, Cmp>::BstIterator::operator++()
     BstNode<Key, Val>* p;
     if( current == nullptr)
     {
-        current = std::move(tree->root);
+        current = tree->root.get();
         if(current == nullptr)
             throw std::underflow_error("Null Tree!");
         while(current->left != nullptr)
-            current = std::move(current->left);
+            current = current->left.get();
     }
     else
     {
         if(current->right != nullptr)
         {
-            current = std::move(current->right);
+            current = current->right.get();
             while(current->left != nullptr)
-                current = std::move(current->left);
+                current = current->left.get();
         }
         else
         {

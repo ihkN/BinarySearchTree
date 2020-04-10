@@ -41,7 +41,7 @@ class Bst
                 
                 // derefrence operator, return a ref to the
                 // value pointed by current node
-                const Pair& operator*() const;
+                Pair& operator*() const;
                 
                 // post and pre increment and decrement
                 BstIterator& operator++();
